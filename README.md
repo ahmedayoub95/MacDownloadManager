@@ -2,6 +2,8 @@
 
 A free download manager for macOS, inspired by Internet Download Manager (IDM) on Windows.
 
+**[Website](https://ahmedayoub95.github.io/MacDownloadManager/) · [Download](https://github.com/ahmedayoub95/MacDownloadManager/releases/latest)**
+
 It has two parts that work together:
 
 - **A Mac app** that does the downloading: multiple connections per file for full speed, pause and resume, a download list with categories, and a folder of your choice.
@@ -314,6 +316,8 @@ scripts/
   install.sh                 Builds, installs into ~/Applications and opens it
 Casks/
   mac-download-manager.rb    Homebrew cask (this repo doubles as the Homebrew tap)
+docs/                        Website (GitHub Pages): index.html, style.css, site.js, images
+  screenshots/               Full-size screenshots used in this README
 .github/workflows/
   build.yml                  Checks every push compiles
   release.yml                Publishes a .dmg and updates the cask when a version tag is pushed

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mac Download Manager: free, fast download manager for macOS</title>
+  <meta name="description" content="A free, open-source download manager for macOS, inspired by IDM. Up to 16 connections per file, pause and resume, and a browser extension that downloads videos with one click.">
+  <meta property="og:title" content="Mac Download Manager">
+  <meta property="og:description" content="Free, fast download manager for macOS with a one-click video download button for your browser.">
+  <meta property="og:image" content="https://ahmedayoub95.github.io/MacDownloadManager/img/app.jpg">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="#"><img src="favicon.png" alt="" width="28" height="28"> Mac Download Manager</a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/ahmedayoub95/MacDownloadManager">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <img class="hero-icon" src="icon.png" alt="Mac Download Manager icon" width="128" height="128">
+      <h1>Downloads at full speed.<br>Videos in one click.</h1>
+      <p class="lead">A free download manager for macOS, inspired by Internet Download Manager on Windows. Up to 16 connections per file, pause and resume, and a browser button that saves the video you're watching.</p>
+      <div class="cta">
+        <a class="button primary" id="download" href="https://github.com/ahmedayoub95/MacDownloadManager/releases/latest">
+          <span>Download for Mac</span>
+          <small id="download-detail">Free · macOS 14 or newer</small>
+        </a>
+        <a class="button" href="#homebrew">Install with Homebrew</a>
+      </div>
+      <p class="fine">Apple Silicon and Intel · Open source (MIT) · No ads, no account</p>
+    </section>
+
+    <section class="shot">
+      <img src="img/app.jpg" alt="The Mac Download Manager window with downloads in progress" width="1600" height="894">
+    </section>
+
+    <section id="features" class="features">
+      <h2>Everything you liked about IDM, on your Mac</h2>
+      <div class="grid">
+        <article>
+          <h3>⚡ Multi-connection downloads</h3>
+          <p>Files are split across up to 16 connections. When one finishes early it takes over half of the slowest part, so nothing sits idle.</p>
+        </article>
+        <article>
+          <h3>🎬 "Download this video" button</h3>
+          <p>A button appears over videos in Chrome, Brave, Edge and Vivaldi. YouTube and most video sites work, including HLS and DASH streams.</p>
+        </article>
+        <article>
+          <h3>🧲 Catches your downloads</h3>
+          <p>Click a download link in your browser and it goes straight to the app instead of the browser's own, slower downloader.</p>
+        </article>
+        <article>
+          <h3>⏯ Pause and resume</h3>
+          <p>Stop a download and pick it up later, even after a restart. Every finished byte is kept.</p>
+        </article>
+        <article>
+          <h3>🗂 Organized automatically</h3>
+          <p>Downloads are grouped into Video, Music, Compressed, Documents and Programs. Choose any folder to save into.</p>
+        </article>
+        <article>
+          <h3>🔒 Private by design</h3>
+          <p>Everything runs on your Mac. No account, no tracking, no servers in between. The code is open for anyone to read.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="video">
+      <div class="text">
+        <h2>Watching something? Keep it.</h2>
+        <p>Hover over any playing video and click <strong>⬇ Download this video</strong>. If the page has several streams, pick the one you want. The best quality is saved as a single MP4 that plays everywhere.</p>
+      </div>
+      <div class="pair">
+        <img src="img/video-button.jpg" alt="The Download this video button over a playing video" width="1600" height="905" loading="lazy">
+        <img src="img/video-menu.jpg" alt="Choosing a stream after clicking the button" width="1226" height="690" loading="lazy">
+      </div>
+    </section>
+
+    <section id="install" class="install">
+      <h2>Install in a minute</h2>
+      <div class="steps">
+        <article>
+          <span class="num">1</span>
+          <h3>Get the app</h3>
+          <p>Download the <a id="dmg-link" href="https://github.com/ahmedayoub95/MacDownloadManager/releases/latest">.dmg</a>, open it and drag the app to Applications. Or use <a href="#homebrew">Homebrew</a>.</p>
+        </article>
+        <article>
+          <span class="num">2</span>
+          <h3>Open it the first time</h3>
+          <p>The app isn't notarized by Apple, so macOS asks once. Open the app, click <strong>Done</strong>, then go to <strong>System Settings → Privacy &amp; Security</strong> and click <strong>Open Anyway</strong>. Homebrew installs skip this step.</p>
+        </article>
+        <article>
+          <span class="num">3</span>
+          <h3>Follow the setup window</h3>
+          <p>The app downloads the tools it needs, connects to your browsers and walks you through adding the extension. No Terminal needed.</p>
+        </article>
+      </div>
+      <div class="brew" id="homebrew">
+        <h3>Prefer Homebrew?</h3>
+        <div class="code">
+          <pre id="brew">brew tap ahmedayoub95/mdm https://github.com/ahmedayoub95/MacDownloadManager
+brew install --cask ahmedayoub95/mdm/mac-download-manager</pre>
+          <button class="copy" data-copy="brew" type="button">Copy</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="faq">
+      <h2>Questions</h2>
+      <details>
+        <summary>Is it really free?</summary>
+        <p>Yes. It's open source under the MIT license, with no paid version, ads or account.</p>
+      </details>
+      <details>
+        <summary>Do I need the browser extension?</summary>
+        <p>No. The app works on its own: paste any link into <em>Add URL</em>. The extension adds the video button and catches downloads you click in the browser.</p>
+      </details>
+      <details>
+        <summary>Which browsers are supported?</summary>
+        <p>Google Chrome, Brave, Microsoft Edge, Vivaldi and Chromium. Safari and Firefox aren't supported yet.</p>
+      </details>
+      <details>
+        <summary>Why does macOS warn me when I first open it?</summary>
+        <p>Apple charges developers a yearly fee to notarize apps. This free project isn't notarized, so macOS asks you to confirm once. You can read every line of the code on GitHub.</p>
+      </details>
+      <details>
+        <summary>Will it make my internet faster?</summary>
+        <p>It can't go beyond your connection's speed, but many servers limit each connection. Using many connections at once gets around that, often several times faster than a browser download.</p>
+      </details>
+    </section>
+  </main>
+
+  <footer>
+    <p><a href="https://github.com/ahmedayoub95/MacDownloadManager">Source on GitHub</a> · <a href="https://github.com/ahmedayoub95/MacDownloadManager/releases">All releases</a> · <a href="https://github.com/ahmedayoub95/MacDownloadManager/issues">Report a problem</a></p>
+    <p class="fine">MIT license. Not affiliated with Internet Download Manager, Tonec Inc., Apple or Google. Please download only content you have the right to.</p>
+  </footer>
+
+  <script src="site.js"></script>
+</body>
+</html>
