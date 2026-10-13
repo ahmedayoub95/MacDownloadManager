@@ -12,15 +12,16 @@ cask "mac-download-manager" do
     strategy :github_latest
   end
 
-  depends_on macos: ">= :sonoma"
+  depends_on macos: :sonoma
 
   app "Mac Download Manager.app"
 
   # The app isn't notarized (that needs a paid Apple account). Installing it with brew is the
   # user's choice to trust it, so skip the "Open Anyway" step.
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-dr", "com.apple.quarantine", "#{appdir}/Mac Download Manager.app"]
+  postflight_steps do
+    run "/usr/bin/xattr",
+        args:         ["-dr", "com.apple.quarantine", "{{appdir}}/Mac Download Manager.app"],
+        must_succeed: false
   end
 
   uninstall quit: "com.ahmed.MacDownloadManager"
