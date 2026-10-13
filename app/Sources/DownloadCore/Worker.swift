@@ -20,13 +20,14 @@ public enum Worker {
         JobStore.write(status)
 
         let command: Command
-        if request.usesExtractor, let ytDlp = Paths.tool("yt-dlp") {
-            command = ytDlpCommand(request, id: id, tool: ytDlp)
-        } else if !request.usesExtractor, let aria2 = Paths.tool("aria2c") {
+        if !request.usesExtractor, let aria2 = Paths.tool("aria2c") {
             command = aria2Command(request, tool: aria2, resuming: resuming)
+        } else if let ytDlp = Paths.tool("yt-dlp") {
+            // Without aria2, yt-dlp also handles plain files (one connection instead of 16).
+            command = ytDlpCommand(request, id: id, tool: ytDlp)
         } else {
             status.state = .failed
-            status.error = "Download tools missing. Run: brew install yt-dlp ffmpeg aria2"
+            status.error = "Download tools are missing. Open Mac Download Manager → Setup to install them."
             JobStore.write(status)
             return 1
         }
@@ -148,6 +149,12 @@ public enum Worker {
 
         if request.kind == "page" {
             args += ["-o", "%(title).150B.%(ext)s"]
+        } else if !request.usesExtractor {
+            let name = (request.filename ?? "").isEmpty ? "%(title).150B.%(ext)s" : request.filename!.replacingOccurrences(of: "%", with: "%%")
+            args += ["-o", name]
+            if let referrer = request.referrer, !referrer.isEmpty { args += ["--referer", referrer] }
+            if let agent = request.userAgent, !agent.isEmpty { args += ["--user-agent", agent] }
+            if let cookies = request.cookies, !cookies.isEmpty { args += ["--add-headers", "Cookie:\(cookies)"] }
         } else {
             // Raw stream URLs have meaningless names; use the page title instead.
             let name = title.isEmpty ? "%(title).150B" : title.replacingOccurrences(of: "%", with: "%%")

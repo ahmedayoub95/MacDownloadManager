@@ -41,12 +41,16 @@ The app has to be **installed** for the extension to work, but it doesn't have t
 **Required**
 
 - **macOS 14 (Sonoma) or newer**, on Apple Silicon or Intel.
-- **[Homebrew](https://brew.sh)**
-- **Download tools**, installed with Homebrew:
-  - `yt-dlp` downloads from YouTube and other video sites. Homebrew also installs Deno, which yt-dlp needs for YouTube.
-  - `ffmpeg` joins video and audio into one MP4.
-  - `aria2` handles fast, multi-connection file downloads.
 - **Xcode Command Line Tools**, which provide the Swift compiler used to build the app.
+
+The app also uses a few free download tools. You don't need to install them yourself; the app's setup window downloads them for you:
+
+- `yt-dlp` downloads from YouTube and other video sites.
+- `ffmpeg` joins video and audio into one MP4.
+- `deno` is needed by yt-dlp for YouTube.
+- `aria2` (optional) speeds up plain file downloads with many connections. Install it with `brew install aria2` if you have [Homebrew](https://brew.sh).
+
+If you already installed these with Homebrew, the app uses those.
 
 **Optional (for browser integration)**
 
@@ -56,19 +60,7 @@ Safari and Firefox are not supported yet.
 
 ## Installation
 
-### 1. Install Homebrew (skip if you already have it)
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-### 2. Install the download tools
-
-```bash
-brew install yt-dlp ffmpeg aria2
-```
-
-### 3. Install the Xcode Command Line Tools (skip if you already have them)
+### 1. Install the Xcode Command Line Tools (skip if you already have them)
 
 ```bash
 xcode-select --install
@@ -76,7 +68,7 @@ xcode-select --install
 
 To check whether they're installed, run `swift --version`. If it prints a version number, you're set.
 
-### 4. Download this project
+### 2. Download this project
 
 ```bash
 git clone https://github.com/ahmedayoub95/MacDownloadManager.git
@@ -85,40 +77,31 @@ cd MacDownloadManager
 
 You can also click **Code → Download ZIP** on GitHub, unzip it, and `cd` into the folder.
 
-### 5. Build and install the app
+### 3. Build and install the app
 
 ```bash
 ./scripts/install.sh
 ```
 
-This script:
-
-1. Builds the app from source.
-2. Installs it as **`~/Applications/Mac Download Manager.app`**.
-3. Registers the app's browser helper with every supported browser you have installed, so the extension can talk to the app.
-4. Opens the app.
-
-The first build takes a minute or two. When it's done, the Mac Download Manager window opens and the app appears in your Dock.
+This builds the app (the first build takes a minute or two), installs it as **`~/Applications/Mac Download Manager.app`** and opens it.
 
 > If macOS asks whether Mac Download Manager may send notifications, click **Allow** so you're told when downloads finish.
 
-### 6. Load the browser extension
+### 4. Follow the setup window
 
-The extension isn't on the Chrome Web Store, so you load it straight from the project folder:
+The first time the app opens, a **Setup** window walks you through three steps:
 
-1. Open your browser's extensions page:
-   - Chrome: `chrome://extensions`
-   - Brave: `brave://extensions`
-   - Edge: `edge://extensions`
-   - Vivaldi: `vivaldi://extensions`
-2. Turn on **Developer mode**. The switch is in the top-right corner (in Edge, it's in the left sidebar).
-3. Click **Load unpacked**.
-4. Select the **`extension`** folder inside this project, not the project folder itself.
-5. **Mac Download Manager** now appears in your extensions list.
-6. Click the puzzle-piece icon in the toolbar and **pin** Mac Download Manager so its icon is always visible.
-7. **Refresh any tabs that were already open.** The extension only starts working on pages loaded after it was installed.
+1. **Download tools.** Click **Install Missing Tools**. The app downloads yt-dlp, ffmpeg and Deno into its own folder; nothing is installed system-wide.
+2. **Browsers.** The app connects itself to every supported browser you have installed. Nothing to click.
+3. **Browser extension.** The extension isn't on the Chrome Web Store, so you add it by hand once:
+   1. Click **Open Browser & Copy Address**, paste the address into the address bar and press Return.
+   2. Turn on **Developer mode** (top-right corner; in Edge, the left sidebar).
+   3. Click **Load unpacked** and choose the folder the setup window shows. **Show Extension Folder** opens it in Finder; in the file picker you can also press ⌘⇧G and paste the path from **Copy Folder Path**.
+   4. Pin the extension from the puzzle-piece icon in the toolbar, and refresh any tabs that were already open.
 
-To check that it's working, click the extension's icon. The popup should say **"App connected"** in green. If it says **"App not found"**, see [Troubleshooting](#troubleshooting).
+When the extension loads, the setup window changes to **"Extension connected"** by itself. Click **Done**.
+
+You can open this window again any time from **Mac Download Manager → Setup…** in the menu bar.
 
 > Chrome may show a "Disable developer mode extensions" message when it starts. That's normal for extensions loaded this way; click the ✕ to keep it.
 
@@ -214,18 +197,14 @@ git pull
 
 Then reload the extension: on `chrome://extensions`, click the **↻** reload icon on Mac Download Manager, and refresh any open tabs.
 
-Keep yt-dlp up to date, because video sites change often:
-
-```bash
-brew upgrade yt-dlp
-```
+The app keeps its own copy of yt-dlp up to date automatically (checked once a day), because video sites change often. If you use Homebrew's yt-dlp instead, run `brew upgrade yt-dlp` now and then.
 
 ## Troubleshooting
 
 **The popup says "App not found"**
-- Run `./scripts/install.sh` again. It registers the app with your browsers.
+- Open **Mac Download Manager → Setup…** and click **Connect Again**.
 - Fully quit and reopen the browser (⌘Q, not just closing the window).
-- Make sure the extension was loaded from this project's `extension` folder. The app only accepts the extension with the ID `pgfkdonjalnlcemopglppogdghdghigg`, which is the ID you get when loading it unpacked from this repo.
+- Make sure the extension was loaded from the folder shown in the setup window (or this project's `extension` folder). The app only accepts the extension with the ID `pgfkdonjalnlcemopglppogdghdghigg`.
 
 **The "Download this video" button doesn't appear**
 - Refresh the page. Tabs opened before the extension was installed or reloaded don't have it.
@@ -236,7 +215,7 @@ brew upgrade yt-dlp
 - The extension was reloaded after the page was opened. Refresh the page.
 
 **A YouTube download fails**
-- Update yt-dlp: `brew upgrade yt-dlp`. Most YouTube failures come from an outdated yt-dlp.
+- Most YouTube failures come from an outdated yt-dlp. The app updates its own copy daily; if you use Homebrew's, run `brew upgrade yt-dlp`.
 
 **The browser still shows a "Save As" window**
 - Turn off **Ask where to save each file before downloading** in your browser's Settings → Downloads.
@@ -248,8 +227,8 @@ brew upgrade yt-dlp
   - `~/Library/Logs/MacDownloadManager/native-host.log`: every download request.
   - `~/Library/Logs/MacDownloadManager/jobs/<id>.log`: the full output of each download.
 
-**"Missing yt-dlp / ffmpeg / aria2c" when running the install script**
-- Run `brew install yt-dlp ffmpeg aria2`.
+**A download fails with "Missing yt-dlp / ffmpeg / deno"**
+- Open **Mac Download Manager → Setup…** and click **Install Missing Tools**.
 
 ## Uninstalling
 
@@ -269,7 +248,7 @@ brew upgrade yt-dlp
    rm -rf ~/Library/Logs/MacDownloadManager
    defaults delete com.ahmed.MacDownloadManager.shared 2>/dev/null
    ```
-4. Optionally, remove the download tools: `brew uninstall yt-dlp ffmpeg aria2`
+4. The tools the app downloaded are removed with its data folder above. If you installed any with Homebrew, remove them with `brew uninstall yt-dlp ffmpeg aria2`.
 
 Files you downloaded are not touched.
 
@@ -325,8 +304,10 @@ app/                         Swift package (the Mac app)
       Worker.swift             runs aria2 or yt-dlp and tracks progress
       JobStore.swift           the shared download list, stored on disk
       Settings.swift           download folder setting
+      Tools.swift              finds and installs yt-dlp, ffmpeg and Deno
+      BrowserSetup.swift       connects the helper to each browser
       Models.swift             data types and paths
-    MacDownloadManager/      SwiftUI app: window, Add URL, Settings
+    MacDownloadManager/      SwiftUI app: window, Add URL, Settings, Setup
     mdm-native-host/         Helper the browser extension talks to
 extension/                   Browser extension (Manifest V3)
   manifest.json
@@ -336,7 +317,7 @@ extension/                   Browser extension (Manifest V3)
   lib/media.js               Finding video streams on each page
   lib/native.js              Talking to the Mac app
   popup.*  options.*         Toolbar popup and settings page
-scripts/install.sh           Builds, installs and registers the app
+scripts/install.sh           Builds and installs the app
 ```
 
 ## Disclaimer
@@ -351,4 +332,4 @@ This project is not affiliated with Internet Download Manager, Tonec Inc., Googl
 
 This project is licensed under the [MIT License](LICENSE). You're free to use, copy, modify and share it, as long as the copyright notice is kept.
 
-The download tools it runs are separate projects with their own licenses: [yt-dlp](https://github.com/yt-dlp/yt-dlp) (Unlicense), [ffmpeg](https://ffmpeg.org/legal.html) (LGPL/GPL) and [aria2](https://github.com/aria2/aria2) (GPL-2.0). They are installed separately through Homebrew and are not included in this repository.
+The download tools it runs are separate projects with their own licenses: [yt-dlp](https://github.com/yt-dlp/yt-dlp) (Unlicense), [ffmpeg](https://ffmpeg.org/legal.html) (LGPL/GPL) and [aria2](https://github.com/aria2/aria2) (GPL-2.0). They are downloaded from their official releases by the app's setup window (or come from Homebrew) and are not included in this repository.

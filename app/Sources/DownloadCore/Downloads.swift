@@ -3,7 +3,7 @@ import Foundation
 /// Actions shared by the app window and the browser helper.
 public enum Downloads {
     /// Both executables live next to each other (Contents/MacOS in the app bundle).
-    static var workerExecutable: String {
+    public static var workerExecutable: String {
         let current = Bundle.main.executableURL ?? URL(fileURLWithPath: CommandLine.arguments[0])
         return current.deletingLastPathComponent().appendingPathComponent(Paths.workerName).path
     }

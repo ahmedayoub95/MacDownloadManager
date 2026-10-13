@@ -3,6 +3,8 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var model: DownloadsModel
+    @EnvironmentObject private var setup: SetupModel
+    @Environment(\.openWindow) private var openWindow
     @State private var category: Category = .all
     @State private var selection = Set<String>()
 
@@ -38,6 +40,10 @@ struct ContentView: View {
             .navigationTitle(category.title)
         }
         .toolbar { toolbar }
+        .task {
+            setup.prepareOnce()
+            if setup.needsSetup { openWindow(id: "setup") }
+        }
         .sheet(isPresented: $model.showingAddURL) { AddURLSheet() }
         .alert("Something went wrong", isPresented: Binding(
             get: { model.errorMessage != nil },

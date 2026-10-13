@@ -12,7 +12,10 @@ public enum Paths {
     static let status = support.appendingPathComponent("status", isDirectory: true)
     static let temp = home.appendingPathComponent("Library/Caches/MacDownloadManager", isDirectory: true)
     public static let logs = home.appendingPathComponent("Library/Logs/MacDownloadManager", isDirectory: true)
-    static let toolDirs = ["/opt/homebrew/bin", "/usr/local/bin"]
+    /// Tools the app downloads itself; checked before Homebrew so the self-updating yt-dlp wins.
+    public static let appBin = support.appendingPathComponent("bin", isDirectory: true)
+    public static let bundledExtensionCopy = support.appendingPathComponent("Browser Extension", isDirectory: true)
+    static let toolDirs = [appBin.path, "/opt/homebrew/bin", "/usr/local/bin"]
 
     static func tool(_ name: String) -> String? {
         toolDirs.map { "\($0)/\(name)" }.first { fileManager.isExecutableFile(atPath: $0) }

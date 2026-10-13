@@ -16,6 +16,9 @@ struct AppCommands: Commands {
     @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
+        CommandGroup(after: .appSettings) {
+            Button("Setup…") { openWindow(id: "setup") }
+        }
         CommandGroup(replacing: .newItem) {
             Button("Add URL…") {
                 openWindow(id: "main")
@@ -35,6 +38,7 @@ struct AppCommands: Commands {
 struct MacDownloadManagerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var model = DownloadsModel()
+    @StateObject private var setup = SetupModel()
 
     var body: some Scene {
         // A WindowGroup (not Window) so clicking the Dock icon, or the browser opening the app,
@@ -42,9 +46,15 @@ struct MacDownloadManagerApp: App {
         WindowGroup("Mac Download Manager", id: "main") {
             ContentView()
                 .environmentObject(model)
+                .environmentObject(setup)
                 .frame(minWidth: 900, minHeight: 480)
         }
         .commands { AppCommands(model: model) }
+
+        Window("Setup", id: "setup") {
+            SetupView().environmentObject(setup)
+        }
+        .windowResizability(.contentSize)
 
         Settings {
             SettingsView().environmentObject(model)
