@@ -9,6 +9,9 @@ It has two parts that work together:
 - **A Mac app** that does the downloading: multiple connections per file for full speed, pause and resume, a download list with categories, and a folder of your choice.
 - **A browser extension** for Chrome, Brave, Edge, Vivaldi and Chromium. It catches downloads when you click them and puts a **"⬇ Download this video"** button over videos on web pages.
 
+> [!IMPORTANT]
+> **Install both.** The extension is what sends your browser's downloads to the app. Without it, files you click in the browser are downloaded by the browser as usual, and the video button isn't there. The app's setup window walks you through adding the extension (it takes about a minute).
+
 ![The Mac Download Manager window with a download in progress](docs/screenshots/app.png)
 
 | "Download this video" button | Choosing a stream |
@@ -32,9 +35,9 @@ It has two parts that work together:
 
 | Setup | What you get |
 |---|---|
-| **App only** | Everything except browser integration. Paste links into **Add URL** (⌘N) to download files or video pages. |
+| **App + extension** (required for browser downloads) | The full experience: downloads you click in the browser go to the app automatically, plus the video button and right-click menu. |
+| **App only** | **Browser downloads are not caught.** The browser keeps downloading files itself. You can still copy a link and paste it into **Add URL** (⌘N) in the app; links that need you to be signed in may fail, because only the extension passes your browser's cookies. |
 | **Extension only** | **Doesn't work.** The extension only passes links to the app. Without the app, the video button shows an error, and normal downloads just continue in the browser as usual. |
-| **App + extension** (recommended) | The full experience: downloads are caught automatically, plus the video button and right-click menu. |
 
 The app has to be **installed** for the extension to work, but it doesn't have to be **open**. The extension starts downloads in the background and brings the app window forward on its own.
 
@@ -87,7 +90,7 @@ The first time the app opens, a **Setup** window walks you through three steps. 
 
 1. **Download tools.** Click **Install Missing Tools**. The app downloads yt-dlp, ffmpeg and Deno into its own folder; nothing is installed system-wide.
 2. **Browsers.** The app connects itself to every supported browser you have installed. Nothing to click.
-3. **Browser extension.** The extension isn't on the Chrome Web Store, so you add it by hand once:
+3. **Browser extension (required).** Without it, downloads you click in the browser stay in the browser. The extension isn't on the Chrome Web Store, so you add it by hand once:
    1. Click **Open Browser & Copy Address**, paste the address into the address bar and press Return.
    2. Turn on **Developer mode** (top-right corner; in Edge, the left sidebar).
    3. Click **Load unpacked** and choose the folder the setup window shows. **Show Extension Folder** opens it in Finder; in the file picker you can also press ⌘⇧G and paste the path from **Copy Folder Path**.
@@ -191,6 +194,12 @@ Then reload the extension: on `chrome://extensions`, click the **↻** reload ic
 The app keeps its own copy of yt-dlp up to date automatically (checked once a day), because video sites change often. If you use Homebrew's yt-dlp instead, run `brew upgrade yt-dlp` now and then.
 
 ## Troubleshooting
+
+**Downloads still go to the browser instead of the app**
+- Check that the extension is installed and switched on at `chrome://extensions`. Without it the browser handles every download itself. Open **Mac Download Manager → Setup…** to add it again.
+- Click the extension's icon: the popup should say **"App connected"** and **Catch downloads** should be on.
+- Only file types in the extension's list, or files of 20 MB or more, are sent to the app. Add more types in the extension's **Options**.
+- Downloads a page builds itself (`blob:` or `data:` links, used by some "Export" buttons and sites like Mega) can only be saved by the browser.
 
 **The popup says "App not found"**
 - Open **Mac Download Manager → Setup…** and click **Connect Again**.

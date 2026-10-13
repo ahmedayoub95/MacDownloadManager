@@ -55,7 +55,7 @@ jobs:
           DRAFT=""
           [ "${{ github.event_name }}" = "workflow_dispatch" ] && DRAFT="--draft --target ${{ github.sha }}"
           gh release create "$TAG" dist/MacDownloadManager-$VERSION.dmg dist/MacDownloadManager-$VERSION.dmg.sha256 \
-            --title "Mac Download Manager $VERSION" --generate-notes $DRAFT
+            --title "Mac Download Manager $VERSION" --notes-file .github/release-notes.md --generate-notes $DRAFT
 
       # The repo doubles as the Homebrew tap: point the cask on main at the new release.
       - name: Update Homebrew cask

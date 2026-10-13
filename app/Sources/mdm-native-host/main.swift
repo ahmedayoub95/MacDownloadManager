@@ -98,6 +98,7 @@ while let message = readMessage() {
             reply(["ok": false, "error": "Unknown message type"])
         }
     } catch {
+        log("\(message["type"] as? String ?? "?") failed: \(error.localizedDescription) \(message["url"] as? String ?? "")")
         reply(["ok": false, "error": error.localizedDescription])
     }
 }
