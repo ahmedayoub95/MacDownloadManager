@@ -24,7 +24,10 @@ chrome.runtime.onInstalled.addListener(async () => {
   });
 
   chrome.action.setBadgeBackgroundColor({ color: "#2563eb" });
+  pingApp(); // lets the app's setup window know the extension is installed
 });
+
+chrome.runtime.onStartup.addListener(() => pingApp());
 
 async function mediaForTab(tab, currentSrc = "") {
   if (tab?.url && needsPageExtractor(tab.url)) {

@@ -24,6 +24,11 @@ public enum AppSettings {
         defaults.string(forKey: downloadFolderKey) == nil
     }
 
+    public static var setupCompleted: Bool {
+        get { defaults.bool(forKey: "setupCompleted") }
+        set { defaults.set(newValue, forKey: "setupCompleted") }
+    }
+
     public static func resetDownloadFolder() {
         defaults.removeObject(forKey: downloadFolderKey)
     }

@@ -5,7 +5,7 @@
 import AppKit
 import DownloadCore
 
-let version = "0.4.0"
+let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
 
 func readMessage() -> [String: Any]? {
     let input = FileHandle.standardInput
@@ -50,6 +50,7 @@ if arguments.count >= 3, arguments[1] == "--run-job" {
 }
 
 while let message = readMessage() {
+    BrowserSetup.markExtensionSeen()
     let id = message["id"] as? String ?? ""
     do {
         switch message["type"] as? String {
