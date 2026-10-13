@@ -58,7 +58,9 @@ If you already installed these with Homebrew, the app uses those.
 
 ### 1. Download the app
 
-Download **`MacDownloadManager-<version>.dmg`** from the [latest release](https://github.com/ahmedayoub95/MacDownloadManager/releases/latest), open it, and drag **Mac Download Manager** onto the **Applications** folder.
+From the [latest release](https://github.com/ahmedayoub95/MacDownloadManager/releases/latest), download **`MacDownloadManager-<version>.zip`**. It contains the app's `.dmg`, the **Browser Extension** folder and a short install guide. Open the `.dmg` inside it and drag **Mac Download Manager** onto the **Applications** folder.
+
+The release also has the `.dmg` on its own if you only want the app; the setup window can give you the extension later.
 
 **Or with [Homebrew](https://brew.sh)**, which also skips step 2:
 
@@ -93,7 +95,7 @@ The first time the app opens, a **Setup** window walks you through three steps. 
 3. **Browser extension (required).** Without it, downloads you click in the browser stay in the browser. The extension isn't on the Chrome Web Store, so you add it by hand once:
    1. Click **Open Browser & Copy Address**, paste the address into the address bar and press Return.
    2. Turn on **Developer mode** (top-right corner; in Edge, the left sidebar).
-   3. Click **Load unpacked** and choose the folder the setup window shows. **Show Extension Folder** opens it in Finder; in the file picker you can also press ⌘⇧G and paste the path from **Copy Folder Path**.
+   3. Click **Load unpacked** and choose the folder the setup window shows. **Show Extension Folder** opens it in Finder; in the file picker you can also press ⌘⇧G and paste the path from **Copy Folder Path**. (The **Browser Extension** folder from the zip works too, but then keep it where it is: the browser loads the extension from that folder. The setup window's copy is safer, because it lives in the app's own folder.)
    4. Pin the extension from the puzzle-piece icon in the toolbar, and refresh any tabs that were already open.
 
 When the extension loads, the setup window changes to **"Extension connected"** by itself. Click **Done**.
@@ -321,6 +323,7 @@ extension/                   Browser extension (Manifest V3)
 scripts/
   build-app.sh               Builds the .app into dist/ (UNIVERSAL=1 for Apple Silicon + Intel)
   make-dmg.sh                Packs it into a .dmg
+  make-zip.sh                Packs the .dmg and the extension into one .zip
   make-cask.sh               Writes the Homebrew cask for a release
   install.sh                 Builds, installs into ~/Applications and opens it
 Casks/
@@ -329,7 +332,7 @@ docs/                        Website (GitHub Pages): index.html, style.css, site
   screenshots/               Full-size screenshots used in this README
 .github/workflows/
   build.yml                  Checks every push compiles
-  release.yml                Publishes a .dmg and updates the cask when a version tag is pushed
+  release.yml                Publishes the .zip and .dmg and updates the cask when a version tag is pushed
 VERSION                      App version used by the build scripts
 ```
 
@@ -354,7 +357,7 @@ git tag v0.5.0
 git push origin v0.5.0
 ```
 
-GitHub Actions builds a universal app, packs it into `MacDownloadManager-0.5.0.dmg` and publishes it on the Releases page with a SHA-256 checksum. You can also run the **Release** workflow by hand from the Actions tab; that creates a draft release.
+GitHub Actions builds a universal app, packs it into `MacDownloadManager-0.5.0.dmg`, puts that and the extension into `MacDownloadManager-0.5.0.zip`, and publishes both on the Releases page with SHA-256 checksums. You can also run the **Release** workflow by hand from the Actions tab; that creates a draft release.
 
 The same workflow then updates `Casks/mac-download-manager.rb` on `main` to the new version and checksum, so `brew upgrade` picks it up. Run `git pull` afterwards to get that commit.
 

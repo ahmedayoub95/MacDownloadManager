@@ -1,6 +1,6 @@
 name: Release
 
-# Push a tag like v0.5.0 to build the app and publish a .dmg on the Releases page.
+# Push a tag like v0.5.0 to build the app and publish a .zip (app + extension) and a .dmg on the Releases page.
 on:
   push:
     tags: ["v*"]
@@ -48,13 +48,20 @@ jobs:
           ./scripts/make-dmg.sh
           cd dist && shasum -a 256 "MacDownloadManager-$VERSION.dmg" | tee "MacDownloadManager-$VERSION.dmg.sha256"
 
+      - name: Make .zip (app + extension)
+        run: |
+          ./scripts/make-zip.sh
+          cd dist && shasum -a 256 "MacDownloadManager-$VERSION.zip" | tee "MacDownloadManager-$VERSION.zip.sha256"
+
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           DRAFT=""
           [ "${{ github.event_name }}" = "workflow_dispatch" ] && DRAFT="--draft --target ${{ github.sha }}"
-          gh release create "$TAG" dist/MacDownloadManager-$VERSION.dmg dist/MacDownloadManager-$VERSION.dmg.sha256 \
+          gh release create "$TAG" \
+            dist/MacDownloadManager-$VERSION.zip dist/MacDownloadManager-$VERSION.zip.sha256 \
+            dist/MacDownloadManager-$VERSION.dmg dist/MacDownloadManager-$VERSION.dmg.sha256 \
             --title "Mac Download Manager $VERSION" --notes-file .github/release-notes.md --generate-notes $DRAFT
 
       # The repo doubles as the Homebrew tap: point the cask on main at the new release.
