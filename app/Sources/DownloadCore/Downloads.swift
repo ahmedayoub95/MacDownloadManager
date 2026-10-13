@@ -118,7 +118,9 @@ public enum Downloads {
             posix_spawn_file_actions_destroy(&actions)
         }
 
-        var argv: [UnsafeMutablePointer<CChar>?] = [executable, "--run-job", id].map { strdup($0) } + [nil]
+        let arguments: [String] = [executable, "--run-job", id]
+        var argv: [UnsafeMutablePointer<CChar>?] = arguments.map { strdup($0) }
+        argv.append(nil)
         defer { argv.forEach { free($0) } }
         var pid = pid_t()
         let result = posix_spawn(&pid, executable, &actions, &attributes, &argv, environ)
