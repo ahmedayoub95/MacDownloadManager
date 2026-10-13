@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Mac Download Manager settings</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body class="options">
+    <h1>Mac Download Manager settings</h1>
+
+    <label class="row">
+      <input type="checkbox" id="interceptEnabled" />
+      Send browser downloads to the app
+    </label>
+    <label class="row">
+      <input type="checkbox" id="videoButtonEnabled" />
+      Show "Download this video" button over videos
+    </label>
+
+    <label class="field">
+      File types to send to the app
+      <textarea id="extensions" rows="4"></textarea>
+      <span class="muted">Separate with spaces or commas, e.g. <code>zip pdf mp4</code></span>
+    </label>
+
+    <label class="field">
+      Also send any download bigger than (MB)
+      <input type="number" id="minSizeMB" min="0" step="1" />
+      <span class="muted">0 turns this off</span>
+    </label>
+
+    <label class="field">
+      Never take over downloads from these sites
+      <textarea id="excludedSites" rows="3"></textarea>
+      <span class="muted">One domain per line, e.g. <code>drive.google.com</code></span>
+    </label>
+
+    <div class="actions">
+      <button id="save">Save</button>
+      <button id="reset" class="secondary">Restore defaults</button>
+      <span id="saved" class="muted"></span>
+    </div>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Mac Download Manager",
+  "version": "0.1.0",
+  "description": "Sends downloads and videos from the browser to the Mac Download Manager app.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyoKHgNfneKju3SWrNurdQhzaPAwYGlezLBjGSdm3f5aIwOfQZs04LGpO2yOMMnIv7VhsMMIPt8IkMRBpAsHGBGzIXK7BapFCWTNFM6cktknCRAhpOh6qC782jZqpVgF53u/lS5fFke2Bxo01rvWjcKNpV3uwvbFJZMU62B3L+qUJfI2r/J75k/b3e5rhtGw0mMK/rmKHAweECItKCG2M3CEftI/qG6iin7GGPQlZSPg2HAIWkYz2O0U1hWYTUui2uI7XJP0wbV2whIHpoGGxfaf/hwDmyeWwExgSYNWY2shcui0Z7huI8IiEirdpDtV7xu+gy1GPzrtk+feVJFEGgwIDAQAB",
+  "permissions": [
+    "downloads",
+    "downloads.ui",
+    "nativeMessaging",
+    "cookies",
+    "webRequest",
+    "storage",
+    "contextMenus"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Mac Download Manager",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html"
+}

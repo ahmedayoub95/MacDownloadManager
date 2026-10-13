@@ -1,0 +1,31 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Swift Package Manager / Xcode build output
+app/.build/
+app/.swiftpm/
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+
+# Packaged app
+*.app
+*.dmg
+*.zip
+
+# Packed extension and its signing key
+*.crx
+*.pem
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Logs and local scratch files
+*.log
+.tmp-*
