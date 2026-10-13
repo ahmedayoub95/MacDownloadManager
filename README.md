@@ -7,6 +7,12 @@ It has two parts that work together:
 - **A Mac app** that does the downloading: multiple connections per file for full speed, pause and resume, a download list with categories, and a folder of your choice.
 - **A browser extension** for Chrome, Brave, Edge, Vivaldi and Chromium. It catches downloads when you click them and puts a **"⬇ Download this video"** button over videos on web pages.
 
+![The Mac Download Manager window with a download in progress](docs/screenshots/app.png)
+
+| "Download this video" button | Choosing a stream |
+|---|---|
+| ![The Download this video button over a playing video](docs/screenshots/video-button.png) | ![The list of streams shown after clicking the button](docs/screenshots/video-menu.png) |
+
 ## Features
 
 - **Fast downloads.** Normal files (zip, dmg, iso, pdf and so on) download over 16 connections at once using [aria2](https://aria2.github.io/).
@@ -167,6 +173,13 @@ Right-click any link and choose **Download with Mac Download Manager**. On a vid
 | Delete the file | Right-click → **Move File to Trash** |
 | Clear the list | Toolbar → **Clear Finished** |
 | Filter downloads | Click a category in the sidebar |
+
+**Keeping the app running**
+
+- Closing the window doesn't quit the app. Click its Dock icon or press **⌘0** to bring the window back. Use **⌘Q** to quit.
+- To start it automatically, turn on **Open Mac Download Manager at login** in **Settings** (⌘,).
+- To keep it in the Dock, right-click its Dock icon → **Options → Keep in Dock**.
+- If it isn't running, open it from Spotlight (⌘Space, type "Mac Download Manager") or from `~/Applications`. The browser extension also starts it automatically when you download something.
 
 **Changing the download folder**
 

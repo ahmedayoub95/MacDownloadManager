@@ -11,23 +11,40 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 }
 
+struct AppCommands: Commands {
+    @ObservedObject var model: DownloadsModel
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some Commands {
+        CommandGroup(replacing: .newItem) {
+            Button("Add URL…") {
+                openWindow(id: "main")
+                model.showingAddURL = true
+            }
+            .keyboardShortcut("n")
+        }
+        CommandGroup(before: .windowList) {
+            Button("Downloads") { openWindow(id: "main") }
+                .keyboardShortcut("0")
+            Divider()
+        }
+    }
+}
+
 @main
 struct MacDownloadManagerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var model = DownloadsModel()
 
     var body: some Scene {
-        Window("Mac Download Manager", id: "main") {
+        // A WindowGroup (not Window) so clicking the Dock icon, or the browser opening the app,
+        // brings the window back after it was closed.
+        WindowGroup("Mac Download Manager", id: "main") {
             ContentView()
                 .environmentObject(model)
                 .frame(minWidth: 900, minHeight: 480)
         }
-        .commands {
-            CommandGroup(replacing: .newItem) {
-                Button("Add URL…") { model.showingAddURL = true }
-                    .keyboardShortcut("n")
-            }
-        }
+        .commands { AppCommands(model: model) }
 
         Settings {
             SettingsView().environmentObject(model)

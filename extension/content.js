@@ -206,18 +206,35 @@
 
   // ---------- finding videos ----------
 
+  const MEDIA_EVENTS = ["play", "playing", "pause", "ended", "loadedmetadata", "emptied"];
+
+  // Media events don't cross shadow DOM boundaries, so videos inside web components
+  // (e.g. the Internet Archive player) get their own listeners.
+  function track(video) {
+    if (videos.has(video)) return;
+    videos.add(video);
+    for (const type of MEDIA_EVENTS) video.addEventListener(type, update);
+  }
+
+  function collectVideos(root) {
+    root.querySelectorAll("video").forEach(track);
+    for (const el of root.querySelectorAll("*")) {
+      if (el.shadowRoot) collectVideos(el.shadowRoot);
+    }
+  }
+
   function scan() {
-    document.querySelectorAll("video").forEach((v) => videos.add(v));
+    collectVideos(document);
     update();
   }
 
-  for (const type of ["play", "playing", "pause", "ended", "loadedmetadata", "emptied"]) {
+  for (const type of MEDIA_EVENTS) {
     document.addEventListener(
       type,
       (event) => {
         const el = event.composedPath()[0];
         if (el instanceof HTMLVideoElement) {
-          videos.add(el);
+          track(el);
           update();
         }
       },
@@ -254,6 +271,8 @@
   }).observe(document.documentElement, { childList: true, subtree: true });
 
   setInterval(update, 1000);
+  // The MutationObserver can't see changes inside shadow roots.
+  setInterval(scan, 2000);
 
   // ---------- taking over download links before the browser starts them ----------
 
