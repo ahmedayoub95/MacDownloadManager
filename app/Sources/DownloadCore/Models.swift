@@ -51,7 +51,7 @@ public struct DownloadRequest: Codable {
         saveDir.map { URL(fileURLWithPath: $0, isDirectory: true) } ?? AppSettings.downloadFolder
     }
 
-    /// Video pages and streams go through yt-dlp; plain files go through aria2.
+    /// Video pages and streams go through yt-dlp; plain files use the built-in downloader.
     var usesExtractor: Bool {
         (kind ?? "file") != "file" || source == "video"
     }

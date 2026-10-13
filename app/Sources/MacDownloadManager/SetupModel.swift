@@ -34,7 +34,7 @@ final class SetupModel: ObservableObject {
         extensionLastSeen = BrowserSetup.extensionLastSeen
     }
 
-    var missingRequired: [Tool] { Tool.allCases.filter { $0.isRequired && locations[$0] == nil } }
+    var missingRequired: [Tool] { Tool.allCases.filter { locations[$0] == nil } }
     var toolsReady: Bool { missingRequired.isEmpty }
     var extensionConnected: Bool { extensionLastSeen != nil }
     var needsSetup: Bool { !toolsReady || !AppSettings.setupCompleted }
@@ -54,7 +54,7 @@ final class SetupModel: ObservableObject {
 
     func installMissingTools() async {
         toolError = nil
-        for tool in missingRequired where tool.canInstallFromApp {
+        for tool in missingRequired {
             installing = tool
             installProgress = 0
             do {

@@ -53,7 +53,7 @@ struct SetupView: View {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(Tool.allCases) { tool in
                     HStack(alignment: .top, spacing: 8) {
-                        statusIcon(found: setup.locations[tool] != nil, optional: !tool.isRequired)
+                        statusIcon(found: setup.locations[tool] != nil)
                         VStack(alignment: .leading, spacing: 1) {
                             Text(tool.title).fontWeight(.medium)
                             Text(detail(for: tool)).font(.caption).foregroundStyle(.secondary)
@@ -84,7 +84,6 @@ struct SetupView: View {
 
     private func detail(for tool: Tool) -> String {
         if let location = setup.locations[tool] { return "\(tool.purpose) · \(location.sourceDescription)" }
-        if tool == .aria2c { return "\(tool.purpose) · install with: brew install aria2" }
         return tool.purpose
     }
 
@@ -148,9 +147,9 @@ struct SetupView: View {
         }
     }
 
-    private func statusIcon(found: Bool, optional: Bool) -> some View {
-        Image(systemName: found ? "checkmark.circle.fill" : (optional ? "minus.circle" : "xmark.circle.fill"))
-            .foregroundStyle(found ? .green : (optional ? .secondary : .red))
+    private func statusIcon(found: Bool) -> some View {
+        Image(systemName: found ? "checkmark.circle.fill" : "xmark.circle.fill")
+            .foregroundStyle(found ? .green : .red)
     }
 }
 

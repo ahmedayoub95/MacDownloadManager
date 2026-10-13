@@ -4,7 +4,6 @@ public enum Tool: String, CaseIterable, Identifiable {
     case ytDlp = "yt-dlp"
     case ffmpeg
     case deno
-    case aria2c
 
     public var id: String { rawValue }
 
@@ -13,7 +12,6 @@ public enum Tool: String, CaseIterable, Identifiable {
         case .ytDlp: "yt-dlp"
         case .ffmpeg: "ffmpeg"
         case .deno: "Deno"
-        case .aria2c: "aria2"
         }
     }
 
@@ -22,15 +20,10 @@ public enum Tool: String, CaseIterable, Identifiable {
         case .ytDlp: "Downloads from YouTube and other video sites"
         case .ffmpeg: "Joins video and audio into one MP4"
         case .deno: "Needed by yt-dlp for YouTube"
-        case .aria2c: "Optional: faster downloads of normal files"
         }
     }
 
-    /// aria2 has no official standalone Mac build, so it is only used when installed with Homebrew.
-    public var canInstallFromApp: Bool { self != .aria2c }
-    public var isRequired: Bool { self != .aria2c }
-
-    var downloadURL: URL? {
+    var downloadURL: URL {
         #if arch(arm64)
         let denoArch = "aarch64", ffmpegArch = "arm64"
         #else
@@ -38,13 +31,11 @@ public enum Tool: String, CaseIterable, Identifiable {
         #endif
         switch self {
         case .ytDlp:
-            return URL(string: "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos")
+            return URL(string: "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos")!
         case .deno:
-            return URL(string: "https://github.com/denoland/deno/releases/latest/download/deno-\(denoArch)-apple-darwin.zip")
+            return URL(string: "https://github.com/denoland/deno/releases/latest/download/deno-\(denoArch)-apple-darwin.zip")!
         case .ffmpeg:
-            return URL(string: "https://github.com/eugeneware/ffmpeg-static/releases/latest/download/ffmpeg-darwin-\(ffmpegArch).gz")
-        case .aria2c:
-            return nil
+            return URL(string: "https://github.com/eugeneware/ffmpeg-static/releases/latest/download/ffmpeg-darwin-\(ffmpegArch).gz")!
         }
     }
 
@@ -67,14 +58,12 @@ public enum Tools {
     }
 
     public static var missingRequired: [Tool] {
-        Tool.allCases.filter { $0.isRequired && locate($0) == nil }
+        Tool.allCases.filter { locate($0) == nil }
     }
 
     /// Downloads a tool into the app's own folder and checks that it runs.
     public static func install(_ tool: Tool, progress: @escaping @Sendable (Double) -> Void) async throws {
-        guard let url = tool.downloadURL else {
-            throw DownloadError("\(tool.title) can only be installed with Homebrew: brew install \(tool.rawValue == "aria2c" ? "aria2" : tool.rawValue)")
-        }
+        let url = tool.downloadURL
         try Paths.fileManager.createDirectory(at: Paths.appBin, withIntermediateDirectories: true)
 
         let downloaded = try await FileDownloader.download(url, progress: progress)

@@ -14,16 +14,14 @@ public enum Worker {
             log("job \(id): missing request or status")
             return 1
         }
-        let resuming = status.percent > 0
         status.pid = getpid()
         status.state = .downloading
         JobStore.write(status)
 
+        if !request.usesExtractor { return runFile(request, id: id, status: status) }
+
         let command: Command
-        if !request.usesExtractor, let aria2 = Paths.tool("aria2c") {
-            command = aria2Command(request, tool: aria2, resuming: resuming)
-        } else if let ytDlp = Paths.tool("yt-dlp") {
-            // Without aria2, yt-dlp also handles plain files (one connection instead of 16).
+        if let ytDlp = Paths.tool("yt-dlp") {
             command = ytDlpCommand(request, id: id, tool: ytDlp)
         } else {
             status.state = .failed
@@ -121,6 +119,94 @@ public enum Worker {
         return process.terminationStatus
     }
 
+    /// Plain files use the built-in multi-connection downloader.
+    static func runFile(_ request: DownloadRequest, id: String, status initial: JobStatus) -> Int32 {
+        var status = initial
+        log("job \(id) started: \(request.url)")
+        let stoppedElsewhere = {
+            let state = JobStore.read(id)?.state
+            return state == .paused || state == .cancelled
+        }
+
+        let download = SegmentedDownload(request: request, workDir: Paths.temp.appendingPathComponent(id)) { progress in
+            guard !stoppedElsewhere() else { return }
+            if let total = progress.total, total > 0 {
+                status.percent = Double(progress.downloaded) / Double(total) * 100
+                status.size = formatBytes(total)
+                if progress.bytesPerSecond > 0 {
+                    status.eta = formatDuration(Double(total - progress.downloaded) / progress.bytesPerSecond)
+                }
+            } else {
+                status.size = formatBytes(progress.downloaded)
+            }
+            status.speed = progress.bytesPerSecond > 0 ? formatBytes(Int64(progress.bytesPerSecond)) + "/s" : nil
+            status.stage = progress.connections > 1 ? "\(progress.connections) connections" : nil
+            JobStore.write(status)
+        }
+
+        do {
+            let result = try download.run()
+            if stoppedElsewhere() { return 1 }
+            let destination = uniqueDestination(in: request.destination, name: result.filename)
+            try Paths.fileManager.moveItem(at: result.file, to: destination)
+            try? Paths.fileManager.removeItem(at: Paths.temp.appendingPathComponent(id))
+            status.state = .done
+            status.percent = 100
+            status.speed = nil
+            status.eta = nil
+            status.stage = nil
+            status.path = destination.path
+            status.name = destination.lastPathComponent
+            JobStore.write(status)
+            JobStore.removeRequest(id)
+            log("job \(id) finished: \(destination.path)")
+            return 0
+        } catch {
+            if stoppedElsewhere() { return 1 }
+            // Keep the request and partial file so the download can be resumed.
+            status.state = .failed
+            status.error = String(error.localizedDescription.prefix(300))
+            status.speed = nil
+            status.eta = nil
+            status.stage = nil
+            JobStore.write(status)
+            log("job \(id) failed: \(error.localizedDescription)")
+            return 1
+        }
+    }
+
+    static func uniqueDestination(in folder: URL, name: String) -> URL {
+        let base = (name as NSString).deletingPathExtension
+        let ext = (name as NSString).pathExtension
+        var candidate = folder.appendingPathComponent(name)
+        var number = 1
+        while Paths.fileManager.fileExists(atPath: candidate.path) {
+            candidate = folder.appendingPathComponent(ext.isEmpty ? "\(base) (\(number))" : "\(base) (\(number)).\(ext)")
+            number += 1
+        }
+        return candidate
+    }
+
+    /// Same style as yt-dlp ("12.3MiB") so the app can add up speeds from both.
+    static func formatBytes(_ bytes: Int64) -> String {
+        let units = ["B", "KiB", "MiB", "GiB", "TiB"]
+        var value = Double(bytes)
+        var unit = 0
+        while value >= 1024 && unit < units.count - 1 {
+            value /= 1024
+            unit += 1
+        }
+        return unit == 0 ? "\(bytes)B" : String(format: "%.1f%@", value, units[unit])
+    }
+
+    static func formatDuration(_ seconds: Double) -> String {
+        guard seconds.isFinite else { return "" }
+        let total = Int(seconds.rounded())
+        if total >= 3600 { return "\(total / 3600)h \(total % 3600 / 60)m" }
+        if total >= 60 { return "\(total / 60)m \(total % 60)s" }
+        return "\(total)s"
+    }
+
     static func firstMatch(_ pattern: String, in text: String) -> [String]? {
         guard let regex = try? NSRegularExpression(pattern: pattern),
               let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)) else { return nil }
@@ -149,12 +235,6 @@ public enum Worker {
 
         if request.kind == "page" {
             args += ["-o", "%(title).150B.%(ext)s"]
-        } else if !request.usesExtractor {
-            let name = (request.filename ?? "").isEmpty ? "%(title).150B.%(ext)s" : request.filename!.replacingOccurrences(of: "%", with: "%%")
-            args += ["-o", name]
-            if let referrer = request.referrer, !referrer.isEmpty { args += ["--referer", referrer] }
-            if let agent = request.userAgent, !agent.isEmpty { args += ["--user-agent", agent] }
-            if let cookies = request.cookies, !cookies.isEmpty { args += ["--add-headers", "Cookie:\(cookies)"] }
         } else {
             // Raw stream URLs have meaningless names; use the page title instead.
             let name = title.isEmpty ? "%(title).150B" : title.replacingOccurrences(of: "%", with: "%%")
@@ -192,41 +272,6 @@ public enum Worker {
             status.speed = value(fields[2])
             status.eta = value(fields[3])
             status.size = value(fields[4]) ?? value(fields[5]) ?? status.size
-            return true
-        }
-    }
-
-    static func aria2Command(_ request: DownloadRequest, tool: String, resuming: Bool) -> Command {
-        var args = [
-            "--dir", request.destination.path,
-            "--max-connection-per-server=16", "--split=16", "--min-split-size=1M",
-            // A resume must write into the same file; a fresh download must not clobber an existing one.
-            "--continue=true", "--auto-file-renaming=\(!resuming)", "--allow-overwrite=false",
-            "--file-allocation=none", "--summary-interval=1", "--console-log-level=notice",
-            "--enable-color=false", "--content-disposition-default-utf8=true",
-        ]
-        if let name = request.filename, !name.isEmpty { args.append("--out=\(name)") }
-        if let referrer = request.referrer, !referrer.isEmpty { args.append("--referer=\(referrer)") }
-        if let agent = request.userAgent, !agent.isEmpty { args.append("--user-agent=\(agent)") }
-        if let cookies = request.cookies, !cookies.isEmpty { args.append("--header=Cookie: \(cookies)") }
-        args.append(request.url)
-
-        return Command(tool: tool, arguments: args) { line, status in
-            if let match = firstMatch(#"Download complete: (.+)$"#, in: line) {
-                let path = match[1].trimmingCharacters(in: .whitespaces)
-                status.path = path
-                status.name = URL(fileURLWithPath: path).lastPathComponent
-                return true
-            }
-            // e.g. [#2089b0 400KiB/1.0MiB(39%) CN:16 DL:115KiB ETA:5s]
-            guard let match = firstMatch(#"/([\d.]+\w+)\((\d+)%\)(?:.*?DL:([\d.]+\w+))?(?:.*?ETA:(\w+))?"#, in: line) else {
-                return false
-            }
-            status.state = .downloading
-            status.size = match[1]
-            status.percent = Double(match[2]) ?? status.percent
-            status.speed = match[3].isEmpty ? nil : "\(match[3])/s"
-            status.eta = match[4].isEmpty ? nil : match[4]
             return true
         }
     }

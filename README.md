@@ -15,7 +15,7 @@ It has two parts that work together:
 
 ## Features
 
-- **Fast downloads.** Normal files (zip, dmg, iso, pdf and so on) download over 16 connections at once using [aria2](https://aria2.github.io/).
+- **Fast downloads.** Normal files (zip, dmg, iso, pdf and so on) download over up to 16 connections at once with the app's built-in engine. When a connection finishes its part early, it takes over half of the slowest remaining part, so no connection sits idle. Pausing keeps every finished byte.
 - **Video downloads.** YouTube and many other sites are handled by [yt-dlp](https://github.com/yt-dlp/yt-dlp), and video and audio are joined into one MP4 with [ffmpeg](https://ffmpeg.org/). Streaming videos (HLS `.m3u8` and DASH `.mpd`) are supported too.
 - **Automatic capture.** Click a download link in your browser and it opens in Mac Download Manager instead of the browser's own downloader.
 - **Video button.** A "Download this video" button appears over videos that are playing or that you hover over.
@@ -48,7 +48,6 @@ The app also uses a few free download tools. You don't need to install them your
 - `yt-dlp` downloads from YouTube and other video sites.
 - `ffmpeg` joins video and audio into one MP4.
 - `deno` is needed by yt-dlp for YouTube.
-- `aria2` (optional) speeds up plain file downloads with many connections. Install it with `brew install aria2` if you have [Homebrew](https://brew.sh).
 
 If you already installed these with Homebrew, the app uses those.
 
@@ -248,7 +247,7 @@ The app keeps its own copy of yt-dlp up to date automatically (checked once a da
    rm -rf ~/Library/Logs/MacDownloadManager
    defaults delete com.ahmed.MacDownloadManager.shared 2>/dev/null
    ```
-4. The tools the app downloaded are removed with its data folder above. If you installed any with Homebrew, remove them with `brew uninstall yt-dlp ffmpeg aria2`.
+4. The tools the app downloaded are removed with its data folder above. If you installed any with Homebrew, remove them with `brew uninstall yt-dlp ffmpeg deno`.
 
 Files you downloaded are not touched.
 
@@ -280,9 +279,9 @@ Browser                              Mac
 │  • right-click menu  │            │    download                              │
 └──────────────────────┘            │                                          │
                                     │ Worker                                   │
-                                    │  • aria2   → normal files (16 conns)     │
-                                    │  • yt-dlp  → video pages and streams     │
-                                    │  • ffmpeg  → joins video + audio         │
+                                    │  • built-in → normal files (16 conns)    │
+                                    │  • yt-dlp   → video pages and streams    │
+                                    │  • ffmpeg   → joins video + audio        │
                                     │  • writes progress to a status file      │
                                     │                                          │
                                     │ Mac Download Manager app (SwiftUI)       │
@@ -301,7 +300,8 @@ app/                         Swift package (the Mac app)
   Sources/
     DownloadCore/            Download engine shared by the app and the helper
       Downloads.swift          start / pause / resume / cancel
-      Worker.swift             runs aria2 or yt-dlp and tracks progress
+      Worker.swift             runs each download and tracks progress
+      SegmentedDownload.swift  multi-connection engine for normal files
       JobStore.swift           the shared download list, stored on disk
       Settings.swift           download folder setting
       Tools.swift              finds and installs yt-dlp, ffmpeg and Deno
@@ -326,10 +326,10 @@ This tool is for downloading content you have the right to download: your own fi
 
 Mac Download Manager does not and will not bypass DRM. Protected services like Netflix, Disney+, Prime Video and Spotify are not supported.
 
-This project is not affiliated with Internet Download Manager, Tonec Inc., Google, YouTube, or the authors of yt-dlp, ffmpeg or aria2.
+This project is not affiliated with Internet Download Manager, Tonec Inc., Google, YouTube, or the authors of yt-dlp, ffmpeg or Deno.
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE). You're free to use, copy, modify and share it, as long as the copyright notice is kept.
 
-The download tools it runs are separate projects with their own licenses: [yt-dlp](https://github.com/yt-dlp/yt-dlp) (Unlicense), [ffmpeg](https://ffmpeg.org/legal.html) (LGPL/GPL) and [aria2](https://github.com/aria2/aria2) (GPL-2.0). They are downloaded from their official releases by the app's setup window (or come from Homebrew) and are not included in this repository.
+The download tools it runs are separate projects with their own licenses: [yt-dlp](https://github.com/yt-dlp/yt-dlp) (Unlicense), [ffmpeg](https://ffmpeg.org/legal.html) (LGPL/GPL) and [Deno](https://github.com/denoland/deno) (MIT). They are downloaded from their official releases by the app's setup window (or come from Homebrew) and are not included in this repository.

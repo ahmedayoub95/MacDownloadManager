@@ -45,6 +45,7 @@ public enum Downloads {
             $0.state = .paused
             $0.speed = nil
             $0.eta = nil
+            $0.stage = nil
         }
     }
 
