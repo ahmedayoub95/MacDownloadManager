@@ -31,6 +31,21 @@ mkdir -p "$STAGE/Contents/MacOS"
 cp "$BIN/MacDownloadManager" "$STAGE/Contents/MacOS/MacDownloadManager"
 cp "$BIN/mdm-native-host" "$STAGE/Contents/MacOS/mdm-native-host"
 
+# App icon: a square PNG (ideally 1024×1024) converted into the .icns format macOS uses.
+ICON_SOURCE="$ROOT/app/Resources/AppIcon.png"
+ICON_PLIST=""
+if [ -f "$ICON_SOURCE" ]; then
+  ICONSET="$ROOT/app/.build/AppIcon.iconset"
+  rm -rf "$ICONSET"
+  mkdir -p "$ICONSET" "$STAGE/Contents/Resources"
+  for size in 16 32 128 256 512; do
+    sips -z $size $size "$ICON_SOURCE" --out "$ICONSET/icon_${size}x${size}.png" >/dev/null
+    sips -z $((size * 2)) $((size * 2)) "$ICON_SOURCE" --out "$ICONSET/icon_${size}x${size}@2x.png" >/dev/null
+  done
+  iconutil -c icns "$ICONSET" -o "$STAGE/Contents/Resources/AppIcon.icns"
+  ICON_PLIST="<key>CFBundleIconFile</key><string>AppIcon</string>"
+fi
+
 cat > "$STAGE/Contents/Info.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -46,6 +61,7 @@ cat > "$STAGE/Contents/Info.plist" <<EOF
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>NSHighResolutionCapable</key><true/>
   <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
+  $ICON_PLIST
 </dict>
 </plist>
 EOF
@@ -58,6 +74,7 @@ pkill -x MacDownloadManager 2>/dev/null && sleep 1 || true
 mkdir -p "$INSTALL_DIR"
 rm -rf "$APP"
 cp -R "$STAGE" "$APP"
+touch "$APP" # make Finder and the Dock pick up a changed icon
 echo "Installed $APP"
 
 SUPPORT="$HOME/Library/Application Support"
