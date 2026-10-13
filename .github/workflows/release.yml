@@ -46,7 +46,7 @@ jobs:
       - name: Make .dmg
         run: |
           ./scripts/make-dmg.sh
-          shasum -a 256 "dist/MacDownloadManager-$VERSION.dmg" | tee "dist/MacDownloadManager-$VERSION.dmg.sha256"
+          cd dist && shasum -a 256 "MacDownloadManager-$VERSION.dmg" | tee "MacDownloadManager-$VERSION.dmg.sha256"
 
       - name: Publish release
         env:
@@ -56,3 +56,18 @@ jobs:
           [ "${{ github.event_name }}" = "workflow_dispatch" ] && DRAFT="--draft --target ${{ github.sha }}"
           gh release create "$TAG" dist/MacDownloadManager-$VERSION.dmg dist/MacDownloadManager-$VERSION.dmg.sha256 \
             --title "Mac Download Manager $VERSION" --generate-notes $DRAFT
+
+      # The repo doubles as the Homebrew tap: point the cask on main at the new release.
+      - name: Update Homebrew cask
+        if: github.event_name == 'push'
+        run: |
+          SHA256=$(cut -d' ' -f1 "dist/MacDownloadManager-$VERSION.dmg.sha256")
+          git fetch origin main
+          git checkout -B main origin/main
+          ./scripts/make-cask.sh "$VERSION" "$SHA256" > Casks/mac-download-manager.rb
+          git add Casks/mac-download-manager.rb
+          git diff --cached --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update Homebrew cask to $VERSION"
+          git push origin main

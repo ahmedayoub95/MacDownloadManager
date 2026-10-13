@@ -55,6 +55,13 @@ If you already installed these with Homebrew, the app uses those.
 
 Download **`MacDownloadManager-<version>.dmg`** from the [latest release](https://github.com/ahmedayoub95/MacDownloadManager/releases/latest), open it, and drag **Mac Download Manager** onto the **Applications** folder.
 
+**Or with [Homebrew](https://brew.sh)**, which also skips step 2:
+
+```bash
+brew tap ahmedayoub95/mdm https://github.com/ahmedayoub95/MacDownloadManager
+brew install --cask ahmedayoub95/mdm/mac-download-manager
+```
+
 Prefer to build it yourself? See [Building from source](#building-from-source).
 
 ### 2. Open it the first time
@@ -173,7 +180,7 @@ Click **Settings** in the popup to change:
 
 ## Updating
 
-Download the new `.dmg` from the [latest release](https://github.com/ahmedayoub95/MacDownloadManager/releases/latest) and drag the app onto **Applications** again, choosing **Replace**. Downloads in progress keep going.
+Download the new `.dmg` from the [latest release](https://github.com/ahmedayoub95/MacDownloadManager/releases/latest) and drag the app onto **Applications** again, choosing **Replace**. Downloads in progress keep going. With Homebrew: `brew upgrade --cask mac-download-manager`.
 
 If you built from source: `git pull`, then `./scripts/install.sh`.
 
@@ -303,10 +310,13 @@ extension/                   Browser extension (Manifest V3)
 scripts/
   build-app.sh               Builds the .app into dist/ (UNIVERSAL=1 for Apple Silicon + Intel)
   make-dmg.sh                Packs it into a .dmg
+  make-cask.sh               Writes the Homebrew cask for a release
   install.sh                 Builds, installs into ~/Applications and opens it
+Casks/
+  mac-download-manager.rb    Homebrew cask (this repo doubles as the Homebrew tap)
 .github/workflows/
   build.yml                  Checks every push compiles
-  release.yml                Publishes a .dmg when a version tag is pushed
+  release.yml                Publishes a .dmg and updates the cask when a version tag is pushed
 VERSION                      App version used by the build scripts
 ```
 
@@ -332,6 +342,8 @@ git push origin v0.5.0
 ```
 
 GitHub Actions builds a universal app, packs it into `MacDownloadManager-0.5.0.dmg` and publishes it on the Releases page with a SHA-256 checksum. You can also run the **Release** workflow by hand from the Actions tab; that creates a draft release.
+
+The same workflow then updates `Casks/mac-download-manager.rb` on `main` to the new version and checksum, so `brew upgrade` picks it up. Run `git pull` afterwards to get that commit.
 
 ## Disclaimer
 
