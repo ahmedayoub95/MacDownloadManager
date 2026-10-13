@@ -38,10 +38,8 @@ The app has to be **installed** for the extension to work, but it doesn't have t
 
 ## Requirements
 
-**Required**
-
 - **macOS 14 (Sonoma) or newer**, on Apple Silicon or Intel.
-- **Xcode Command Line Tools**, which provide the Swift compiler used to build the app.
+- **For browser integration:** Google Chrome, Brave, Microsoft Edge, Vivaldi or Chromium. Safari and Firefox are not supported yet.
 
 The app also uses a few free download tools. You don't need to install them yourself; the app's setup window downloads them for you:
 
@@ -51,44 +49,32 @@ The app also uses a few free download tools. You don't need to install them your
 
 If you already installed these with Homebrew, the app uses those.
 
-**Optional (for browser integration)**
-
-- **Google Chrome, Brave, Microsoft Edge, Vivaldi or Chromium.**
-
-Safari and Firefox are not supported yet.
-
 ## Installation
 
-### 1. Install the Xcode Command Line Tools (skip if you already have them)
+### 1. Download the app
+
+Download **`MacDownloadManager-<version>.dmg`** from the [latest release](https://github.com/ahmedayoub95/MacDownloadManager/releases/latest), open it, and drag **Mac Download Manager** onto the **Applications** folder.
+
+Prefer to build it yourself? See [Building from source](#building-from-source).
+
+### 2. Open it the first time
+
+The app is free and open source but isn't notarized by Apple (that needs a paid developer account), so macOS blocks the first launch. You only do this once:
+
+- **macOS 15 (Sequoia) and newer:** open the app; when macOS says it can't verify it, click **Done**. Then go to **System Settings → Privacy & Security**, scroll down to the message about Mac Download Manager and click **Open Anyway**, then confirm.
+- **macOS 14 (Sonoma):** right-click the app in Applications, choose **Open**, then click **Open** again.
+
+Or, in Terminal:
 
 ```bash
-xcode-select --install
+xattr -dr com.apple.quarantine "/Applications/Mac Download Manager.app"
 ```
-
-To check whether they're installed, run `swift --version`. If it prints a version number, you're set.
-
-### 2. Download this project
-
-```bash
-git clone https://github.com/ahmedayoub95/MacDownloadManager.git
-cd MacDownloadManager
-```
-
-You can also click **Code → Download ZIP** on GitHub, unzip it, and `cd` into the folder.
-
-### 3. Build and install the app
-
-```bash
-./scripts/install.sh
-```
-
-This builds the app (the first build takes a minute or two), installs it as **`~/Applications/Mac Download Manager.app`** and opens it.
 
 > If macOS asks whether Mac Download Manager may send notifications, click **Allow** so you're told when downloads finish.
 
-### 4. Follow the setup window
+### 3. Follow the setup window
 
-The first time the app opens, a **Setup** window walks you through three steps:
+The first time the app opens, a **Setup** window walks you through three steps. (If you opened the app straight from the disk image, it first asks you to click **Move to Applications**.)
 
 1. **Download tools.** Click **Install Missing Tools**. The app downloads yt-dlp, ffmpeg and Deno into its own folder; nothing is installed system-wide.
 2. **Browsers.** The app connects itself to every supported browser you have installed. Nothing to click.
@@ -187,14 +173,11 @@ Click **Settings** in the popup to change:
 
 ## Updating
 
-After pulling new changes:
+Download the new `.dmg` from the [latest release](https://github.com/ahmedayoub95/MacDownloadManager/releases/latest) and drag the app onto **Applications** again, choosing **Replace**. Downloads in progress keep going.
 
-```bash
-git pull
-./scripts/install.sh
-```
+If you built from source: `git pull`, then `./scripts/install.sh`.
 
-Then reload the extension: on `chrome://extensions`, click the **↻** reload icon on Mac Download Manager, and refresh any open tabs.
+Then reload the extension: on `chrome://extensions`, click the **↻** reload icon on Mac Download Manager, and refresh any open tabs. The app updates the extension folder itself when a new version comes with it.
 
 The app keeps its own copy of yt-dlp up to date automatically (checked once a day), because video sites change often. If you use Homebrew's yt-dlp instead, run `brew upgrade yt-dlp` now and then.
 
@@ -234,7 +217,7 @@ The app keeps its own copy of yt-dlp up to date automatically (checked once a da
 1. **Remove the extension:** on `chrome://extensions`, click **Remove** on Mac Download Manager.
 2. **Quit the app**, then delete it:
    ```bash
-   rm -rf ~/Applications/"Mac Download Manager.app"
+   rm -rf "/Applications/Mac Download Manager.app" ~/Applications/"Mac Download Manager.app"
    ```
 3. **Remove the browser registration and app data:**
    ```bash
@@ -317,8 +300,38 @@ extension/                   Browser extension (Manifest V3)
   lib/media.js               Finding video streams on each page
   lib/native.js              Talking to the Mac app
   popup.*  options.*         Toolbar popup and settings page
-scripts/install.sh           Builds and installs the app
+scripts/
+  build-app.sh               Builds the .app into dist/ (UNIVERSAL=1 for Apple Silicon + Intel)
+  make-dmg.sh                Packs it into a .dmg
+  install.sh                 Builds, installs into ~/Applications and opens it
+.github/workflows/
+  build.yml                  Checks every push compiles
+  release.yml                Publishes a .dmg when a version tag is pushed
+VERSION                      App version used by the build scripts
 ```
+
+## Building from source
+
+You need the **Xcode Command Line Tools** (`xcode-select --install`; check with `swift --version`).
+
+```bash
+git clone https://github.com/ahmedayoub95/MacDownloadManager.git
+cd MacDownloadManager
+./scripts/install.sh
+```
+
+This builds the app (the first build takes a minute or two), installs it as **`~/Applications/Mac Download Manager.app`** and opens it. Then follow [the setup window](#3-follow-the-setup-window). Apps you build yourself aren't blocked by macOS, so there's no "Open Anyway" step.
+
+### Publishing a release
+
+Bump the version in `VERSION`, commit, then push a matching tag:
+
+```bash
+git tag v0.5.0
+git push origin v0.5.0
+```
+
+GitHub Actions builds a universal app, packs it into `MacDownloadManager-0.5.0.dmg` and publishes it on the Releases page with a SHA-256 checksum. You can also run the **Release** workflow by hand from the Actions tab; that creates a draft release.
 
 ## Disclaimer
 

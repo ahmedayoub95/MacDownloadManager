@@ -18,6 +18,8 @@ struct SetupView: View {
                 }
             }
 
+            if !setup.isInApplications { moveBanner }
+
             ScrollView {
                 VStack(spacing: 14) {
                     toolsStep
@@ -44,6 +46,25 @@ struct SetupView: View {
         .frame(width: 620, height: 640)
         .onAppear { setup.startWatching() }
         .onDisappear { setup.stopWatching() }
+    }
+
+    private var moveBanner: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange).font(.title2)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Move the app to your Applications folder").font(.headline)
+                Text("It's running from the disk image or a temporary location, so your browser couldn't find it later.")
+                    .foregroundStyle(.secondary)
+                Button("Move to Applications") { setup.moveToApplications() }
+                    .buttonStyle(.borderedProminent)
+                if let error = setup.moveError {
+                    Text(error).font(.caption).foregroundStyle(.red)
+                }
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.orange.opacity(0.12)))
     }
 
     // MARK: - Step 1
@@ -92,7 +113,10 @@ struct SetupView: View {
     private var browserStep: some View {
         StepCard(number: 2, title: "Connect to your browsers", done: !setup.registeredBrowsers.isEmpty) {
             VStack(alignment: .leading, spacing: 8) {
-                if setup.registeredBrowsers.isEmpty {
+                if !setup.isInApplications {
+                    Text("Happens automatically once the app is in your Applications folder.")
+                        .foregroundStyle(.secondary)
+                } else if setup.registeredBrowsers.isEmpty {
                     Text("No supported browser found. Install Chrome, Brave, Edge, Vivaldi or Chromium, then click Connect Again.")
                         .foregroundStyle(.secondary)
                 } else {
@@ -100,6 +124,7 @@ struct SetupView: View {
                         .foregroundStyle(.secondary)
                 }
                 Button("Connect Again") { setup.registerAgain() }
+                    .disabled(!setup.isInApplications)
             }
         }
     }

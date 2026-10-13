@@ -15,13 +15,20 @@ final class SetupModel: ObservableObject {
 
     static let chromeBundleIDs = ["com.google.Chrome", "com.brave.Browser", "com.microsoft.edgemac", "com.vivaldi.Vivaldi", "org.chromium.Chromium"]
 
+    @Published var moveError: String?
+    let isInApplications = AppLocation.isInApplications
+
     private var prepared = false
 
     /// Runs once per launch; everything here is safe to repeat.
     func prepareOnce() {
         guard !prepared else { return }
         prepared = true
-        registeredBrowsers = BrowserSetup.registerWithBrowsers()
+        // Registering from the .dmg would point browsers at a path that disappears on eject.
+        if isInApplications {
+            AppLocation.clearQuarantine()
+            registeredBrowsers = BrowserSetup.registerWithBrowsers()
+        }
         extensionFolder = BrowserSetup.installBundledExtension()
         Tools.updateYtDlpIfNeeded()
         refresh()
@@ -37,7 +44,15 @@ final class SetupModel: ObservableObject {
     var missingRequired: [Tool] { Tool.allCases.filter { locations[$0] == nil } }
     var toolsReady: Bool { missingRequired.isEmpty }
     var extensionConnected: Bool { extensionLastSeen != nil }
-    var needsSetup: Bool { !toolsReady || !AppSettings.setupCompleted }
+    var needsSetup: Bool { !isInApplications || !toolsReady || !AppSettings.setupCompleted }
+
+    func moveToApplications() {
+        do {
+            try AppLocation.moveToApplications()
+        } catch {
+            moveError = error.localizedDescription
+        }
+    }
 
     func startWatching() {
         refresh()
@@ -71,6 +86,7 @@ final class SetupModel: ObservableObject {
     }
 
     func registerAgain() {
+        guard isInApplications else { return }
         registeredBrowsers = BrowserSetup.registerWithBrowsers()
     }
 

@@ -5,7 +5,7 @@
 import AppKit
 import DownloadCore
 
-let version = "0.5.0"
+let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
 
 func readMessage() -> [String: Any]? {
     let input = FileHandle.standardInput
